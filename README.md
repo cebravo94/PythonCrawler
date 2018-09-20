@@ -1,1 +1,1 @@
-oxl
+scrapy crawl bibtec --nolog

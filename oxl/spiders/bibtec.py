@@ -14,23 +14,22 @@ class BibtecSpider(CrawlSpider):
     ]
 
     rules = {
-        Rule(LinkExtractor(allow=(), restrict_xpaths=('//*[@id="main"]/ul/li/a'))),
-        Rule(LinkExtractor(allow=(), restrict_xpaths=('//li[@class="export drop-down"]/div[@class="body"]/ul/li[last()]'))),
-        Rule(LinkExtractor(allow=(), restrict_xpaths=('//*[@id="main"]/ul//li[2]/div[2]/ul[1]/li[1]/a'))),
-        Rule(LinkExtractor(allow=(), restrict_xpaths=('//*[@id="main"]/p/a')), 
+        Rule(LinkExtractor(allow=(), restrict_xpaths=('//*[@id="main"]/ul/li/a'))),                         #xpaths de los menus
+        Rule(LinkExtractor(allow=(), restrict_xpaths=('//*[@id="main"]/ul//li[2]/div[2]/ul[1]/li[1]/a')),   #xpaths de los enlace a las bibtec
             callback="parse_item", 
             follow=False)
+        
     }
 
     def parse_item(self, response):
-        time.sleep(5)
-        url = response.url+""
+        url = str(response.xpath('//*[@id="main"]/p/a').extract())  #xpath del enlace a descarga
+        url = url.split(' ')[1]
+        url = url.split('"')[1]
+        
         if (url.endswith(".bib")):
             print('Bibtec URL.. ' + url) #link de descarga
             filename = url.rsplit('/',1)[1]
             print(filename)
             urllib.urlretrieve (url, filename) #descarga
         
-
-        #//*[@id="main"]/p/a                                -- bibtec juntos
-        #//*[@id="main"]/ul//li[2]/div[2]/ul[1]/li[1]/a     -- bibtec separados
+        time.sleep(5)

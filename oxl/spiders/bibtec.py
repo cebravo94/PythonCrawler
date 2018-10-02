@@ -32,6 +32,13 @@ class BibtecSpider(CrawlSpider):
             print("\nSe intenta parsear "+response.url)
             hxs = HtmlXPathSelector(response)
             vols = hxs.select('//*[@id="main"]/ul')
+            journalurl = (str)(response.xpath('//*[@id="breadcrumbs"]/ul/li/span[3]/a').extract())
+            journalurl = journalurl.split('"')[1]
+            journal = (str)(response.xpath('//*[@id="breadcrumbs"]/ul/li/span[3]/a/span').extract())
+            journal = journal.split(">")[1]
+            journal = journal.split("<")[0]
+            print("El journal es "+journal)
+            print("El url del journal es "+journalurl)
             n = len(vols)
             for i in range(1,n+1):
                 paths = '//*[@id="main"]/ul['+str(i)+']/li'
@@ -40,6 +47,14 @@ class BibtecSpider(CrawlSpider):
                 o  = len(pubs)
                 for j in range(1, o+1):
                     print("Se parsea el bloque "+'//*[@id="main"]/ul['+str(i)+']/li['+str(j)+']')
+                    titulo = (str)(response.xpath('//*[@id="main"]/ul['+str(i)+']/li['+str(j)+']/div[2]/span[last()-1]').extract())
+                    titulo = titulo.split(">")[1]
+                    titulo = titulo.split("<")[0]
+                    publicacionurl = (str)(response.xpath('//*[@id="main"]/ul['+str(i)+']/li['+str(j)+']/nav/ul/li[4]/div[2]/ul[2]/li/small').extract())
+                    publicacionurl = publicacionurl.split(">")[1]
+                    publicacionurl = publicacionurl.split("<")[0]
+                    print("El título es "+titulo)
+                    print("El url del artículo es "+publicacionurl)
                     pathbibtec = '//*[@id="main"]/ul['+str(i)+']/li['+str(j)+']/nav/ul/li[2]/div/ul/li[1]/a'
                     pathauthors = '//*[@id="main"]/ul['+str(i)+']/li['+str(j)+']/div[2]/span/a'
                     urlbib = (str)(response.xpath(pathbibtec).extract())

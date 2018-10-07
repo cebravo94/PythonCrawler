@@ -5,6 +5,7 @@ import urllib
 import urllib2
 import bibtexparser
 import re
+import os
 
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.selector import HtmlXPathSelector
@@ -28,7 +29,7 @@ class BibtecSpider(CrawlSpider):
     }
 
     def parse_item(self, response):
-
+        camposbibtex = ["address","annote","author","booktitle","chapter","crossref","doi","edition","editor","institution","journal","month","number","organitzation","pages","publisher","school","series","title","type","volume","year"]
         url = (str)(response.url)
         try:
             print("\nSe intenta parsear "+response.url)
@@ -44,13 +45,13 @@ class BibtecSpider(CrawlSpider):
                 for j in range(1, o+1):
                     print("")
                     try:
-                        print("Se parsea el bloque "+paths+'['+str(j)+']')
+                        #print("Se parsea el bloque "+paths+'['+str(j)+']')
                         titulo = (str)(response.xpath(paths+'['+str(j)+']/div/span[@class="title"]').extract())
                         titulo = titulo.split(">")[1]
                         titulo = titulo.split("<")[0]
-                        print("El título es "+titulo)
                         pathbibtec = paths+'['+str(j)+']/nav/ul/li[2]/div/ul/li[1]/a'
-                        pathauthors = paths+'['+str(j)+']/div[2]/span/a'
+                        pathauthors = paths+'['+str(j)+']/div/span/a'
+                        print(pathauthors)
                         urlbib = (str)(response.xpath(pathbibtec).extract())
                         urlbib = urlbib.split('"')[1]
                         try:
@@ -58,14 +59,15 @@ class BibtecSpider(CrawlSpider):
                             s2 = s.split("href")
                             p=len(s2)
                             authors = []
+                            authors.append(url)
                             for k in range(0,p):
                                 s3 = s2[k]
                                 if '"' in s3:
                                     s3 = s3.split('"')[1]
                                     authors.append(s3)
-                            print ("Autores")
+                            autores=""
                             for k in range(0, len(authors)):
-                                print(authors[k])
+                                autores += autores+"\n\tvoc:Author <"+authors[k]+"> ;"
                         except:
                             print ("No hay autores")
 
@@ -83,18 +85,24 @@ class BibtecSpider(CrawlSpider):
                             print tipo
                             bib_data = parse_string(s,"bibtex")
                             nombrearchivo = urlbib.split("/")[-2]+"-"+urlbib.split("/")[-1]
-                            print(nombrearchivo)
                             f = open(nombrearchivo+".ttl","w+")
                             f.write("@prefix owl: <http://www.w3.org/2002/07/owl#> .\n")
                             f.write("@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n")
-                            f.write("@prefix ns0: <https://websemantica.icc/rdf/dblp-schema#> .\n")
-
-                            f.close()
+                            f.write("@prefix ns0: <https://websemantica.icc/rdf/vocabulary#> .\n\n")
                             for entry in bib_data.entries.values():
                                 #print entry.key
                                 #print entry.fields.keys()
+                                f.write("<"+bib_data.entries[entry.key].fields["biburl"]+">")
+                                f.write(autores)
                                 for value in entry.fields.keys():
-                                    print value ,"=", bib_data.entries[entry.key].fields[value]
+                                    #print value ,"=", bib_data.entries[entry.key].fields[value]
+                                    if value in camposbibtex:
+                                        f.write("\n\tvoc:"+value+' "'+bib_data.entries[entry.key].fields[value]+'" ;')
+                            f.seek(-1, os.SEEK_END)
+                            f.truncate()
+                            f.write(".")
+                            f.close()
+                                
                         except:
                             print("No se pudo parsear el bibtec")
                     except:

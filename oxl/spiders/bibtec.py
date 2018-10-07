@@ -15,21 +15,11 @@ class BibtecSpider(CrawlSpider):
     name = "bibtec"
     allowed_domains = ["dblp.uni-trier.de","dblp.org"]
     start_urls = [
-        #'https://dblp.uni-trier.de/db/journals/publ/',
-        #'https://dblp.uni-trier.de/db/conf/',
-        #'https://dblp.org/db/journals/'
         'https://dblp.org/pers'
     ]
     dont_filter=True
 
     rules = {
-        #Rule(LinkExtractor(allow=(), restrict_xpaths=('//*[@id="main"]/ul/li/a')),   #xpaths de los menus
-        #    callback="parse_item", 
-        #    follow=True),
-        #Rule(LinkExtractor(allow=(), restrict_xpaths=('//*[@id="browse-conf-output"]/div/ul/li')),   #xpaths de los menus
-        #    callback="parse_item", 
-        #    follow=True),
-        #Rule(LinkExtractor(allow=(), restrict_xpaths=('//*[@id="browse-conf-output"]/p[2]/a[2]'))) #boton next para conferencias
         Rule(LinkExtractor(allow=(), restrict_xpaths=('//*[@id="browse-person-output"]/div/div/ul/li')),   #xpaths de los menus de personas
             callback="parse_item", 
             follow=True),
@@ -40,20 +30,11 @@ class BibtecSpider(CrawlSpider):
     def parse_item(self, response):
 
         url = (str)(response.url)
-        print (url)
-        #print (response.xpath('//*[@id="browse-person-output"]/header/h2').extract())
         try:
             print("\nSe intenta parsear "+response.url)
             hxs = HtmlXPathSelector(response)
             bloques = '//*[@id="publ-section"]'
             nbloques = hxs.select(bloques)
-            #journalurl = (str)(response.xpath('//*[@id="breadcrumbs"]/ul/li/span[3]/a').extract())
-            #journalurl = journalurl.split('"')[1]
-            #journal = (str)(response.xpath('//*[@id="breadcrumbs"]/ul/li/span[3]/a/span').extract())
-            #journal = journal.split(">")[1]
-            #journal = journal.split("<")[0]
-            #print("El journal es "+journal)
-            #print("El url del journal es "+journalurl)
             n = len(nbloques)
             for i in range(1,n+1):
                 paths = bloques+'/div['+str(i)+']/div/ul/li'
@@ -67,11 +48,7 @@ class BibtecSpider(CrawlSpider):
                         titulo = (str)(response.xpath(paths+'['+str(j)+']/div/span[@class="title"]').extract())
                         titulo = titulo.split(">")[1]
                         titulo = titulo.split("<")[0]
-                        #publicacionurl = (str)(response.xpath(paths+'['+str(j)+']/nav/ul/li[4]/div[2]/ul[2]/li/small').extract())
-                        #publicacionurl = publicacionurl.split(">")[1]
-                        #publicacionurl = publicacionurl.split("<")[0]
                         print("El título es "+titulo)
-                        #print("El url del artículo es "+publicacionurl)
                         pathbibtec = paths+'['+str(j)+']/nav/ul/li[2]/div/ul/li[1]/a'
                         pathauthors = paths+'['+str(j)+']/div[2]/span/a'
                         urlbib = (str)(response.xpath(pathbibtec).extract())
@@ -101,11 +78,18 @@ class BibtecSpider(CrawlSpider):
                             s = s.split('</pre>')[0]
                             s = s.replace("\n","")
                             s = re.sub("\s\s+", " ", s)
-                            #tipo = s.split("@")[0]
                             tipo = s.split("{")[0]
                             tipo = tipo.replace("@","")
                             print tipo
                             bib_data = parse_string(s,"bibtex")
+                            nombrearchivo = urlbib.split("/")[-2]+"-"+urlbib.split("/")[-1]
+                            print(nombrearchivo)
+                            f = open(nombrearchivo+".ttl","w+")
+                            f.write("@prefix owl: <http://www.w3.org/2002/07/owl#> .\n")
+                            f.write("@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n")
+                            f.write("@prefix ns0: <https://websemantica.icc/rdf/dblp-schema#> .\n")
+
+                            f.close()
                             for entry in bib_data.entries.values():
                                 #print entry.key
                                 #print entry.fields.keys()

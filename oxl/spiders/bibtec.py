@@ -107,6 +107,7 @@ class BibtecSpider(CrawlSpider):
                             if os.path.isfile(nombrearchivo+".ttl")==False:
                                 f = open(nombrearchivo+".ttl","w+")
                                 f.write("@prefix owl: <http://www.w3.org/2002/07/owl#> .\n")
+                                f.write("@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n")
                                 f.write("@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n")
                                 f.write("@prefix voc: <https://websemantica.icc/rdf/vocabulary#> .\n\n")
                                 for entry in bib_data.entries.values():

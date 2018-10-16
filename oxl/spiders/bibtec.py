@@ -3,7 +3,6 @@ import time
 import scrapy
 import urllib
 import urllib2
-import bibtexparser
 import re
 import os
 import os.path
@@ -29,13 +28,12 @@ class BibtecSpider(CrawlSpider):
         
     }
 
-    def parseauthor(self, url):
+    def parseauthor(self, url):   #método que crea archivos para los autores
         try:
             f = urllib.urlopen(url) #Abre la URL del bibtec
             s = f.read()
             s = s.split('data-name="')[1]
             s = s.split('">')[0]
-            #print(s)
             nombrearchivo = url.split("/")[-1]
             if os.path.isfile(nombrearchivo+".ttl")==False:
                 f = open(nombrearchivo+".ttl","w+")

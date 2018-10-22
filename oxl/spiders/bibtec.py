@@ -121,7 +121,11 @@ class BibtecSpider(CrawlSpider):
                                     for value in entry.fields.keys():
                                         #print value ,"=", bib_data.entries[entry.key].fields[value]
                                         if value in camposbibtex:
-                                            f.write("\n\tvoc:"+value.capitalize()+' "'+bib_data.entries[entry.key].fields[value]+'" ;')
+                                            valor = bib_data.entries[entry.key].fields[value]
+                                            valor = valor.replace("{","")
+                                            valor = valor.replace("}","")
+                                            valor = valor.replace("\\","")
+                                            f.write("\n\tvoc:"+value.capitalize()+' "'+valor+'" ;')
                                 f.seek(-1, os.SEEK_END)
                                 f.truncate()
                                 f.write(".")

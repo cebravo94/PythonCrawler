@@ -124,7 +124,11 @@ class BibtecSpider(CrawlSpider):
                                             valor = bib_data.entries[entry.key].fields[value]
                                             valor = valor.replace("{","")
                                             valor = valor.replace("}","")
+                                            valor = valor.replace("\\(_\\mbox2\\)","2")
+                                            valor = valor.replace("\\&amp;","&")
+                                            valor = valor.replace("\\emph;","")
                                             valor = valor.replace("\\","")
+                                            valor = valor.replace("\"","'")
                                             f.write("\n\tvoc:"+value.capitalize()+' "'+valor+'" ;')
                                 f.seek(-1, os.SEEK_END)
                                 f.truncate()

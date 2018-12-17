@@ -28,6 +28,8 @@ class BibtecSpider(CrawlSpider):
         
     }
 
+    terms = {"XML"}
+
     def parseauthor(self, url):   #método que crea archivos para los autores
         try:
             f = urllib.urlopen(url) #Abre la URL del bibtec
@@ -45,6 +47,12 @@ class BibtecSpider(CrawlSpider):
             "No se pudieron generar los autores"
 
     def parse_item(self, response):
+        if(len(BibtecSpider.terms)<10):
+            file = open("terms.txt","r")
+            for line in file:
+                #print line
+                BibtecSpider.terms.add(line.lower())
+            file.close()
         camposbibtex = ["address","annote","author","booktitle","chapter","crossref","doi","edition","editor","institution","journal","month","number","organitzation","pages","publisher","school","series","title","type","volume","year"]
         url = (str)(response.url)
         try:
@@ -85,7 +93,7 @@ class BibtecSpider(CrawlSpider):
                             result = list(setautores)
                             autores=""
                             for k in range(0, len(result)):
-                                self.parseauthor(result[k])
+                                #self.parseauthor(result[k])
                                 autores += "\n\tvoc:HasAuthor <"+result[k]+"> ;"
                         except:
                             print ("No hay autores")
@@ -113,6 +121,14 @@ class BibtecSpider(CrawlSpider):
                                 for entry in bib_data.entries.values():
                                     #print entry.key
                                     #print entry.fields.keys()
+                                    related = []
+                                    title = ""+bib_data.entries[entry.key].fields["title"]
+                                    title = title.lower()
+                                    print title
+                                    for linee in BibtecSpider.terms:
+                                        #print linee
+                                        if linee in title:
+                                            related.append(linee)
                                     uri = bib_data.entries[entry.key].fields["biburl"]
                                     uri = uri.replace("bib","html")
                                     f.write("<"+uri+">")
@@ -130,6 +146,8 @@ class BibtecSpider(CrawlSpider):
                                             valor = valor.replace("\\","")
                                             valor = valor.replace("\"","'")
                                             f.write("\n\tvoc:"+value.capitalize()+' "'+valor+'" ;')
+                                    for keyword in related:
+                                        f.write("\n\tvoc:Keyword"+' "'+keyword+'" ;')
                                 f.seek(-1, os.SEEK_END)
                                 f.truncate()
                                 f.write(".")

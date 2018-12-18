@@ -11,6 +11,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.selector import HtmlXPathSelector
 from scrapy.linkextractors import LinkExtractor
 from pybtex.database import parse_string
+from collections import OrderedDict
 
 class BibtecSpider(CrawlSpider):
     name = "bibtec"
@@ -48,12 +49,16 @@ class BibtecSpider(CrawlSpider):
 
     def parse_item(self, response):
         if(len(BibtecSpider.terms)<10):
-            file = open("terms.txt","r")
+            file = open("terms2.txt","r")
             for line in file:
                 #print line
-                BibtecSpider.terms.add(line.lower())
+                palabras = line.lower().split(" ")
+                for palabra in palabras:
+                    BibtecSpider.terms.add(palabra)
             file.close()
-        camposbibtex = ["address","annote","author","booktitle","chapter","crossref","doi","edition","editor","institution","journal","month","number","organitzation","pages","publisher","school","series","title","type","volume","year"]
+        camposbibtex = ["address","annote","author","booktitle","chapter",
+        "crossref","doi","edition","editor","institution","journal","month",
+        "number","organitzation","pages","publisher","school","series","title","type","volume","year"]
         url = (str)(response.url)
         try:
             print("\nSe intenta parsear "+response.url)
@@ -124,11 +129,12 @@ class BibtecSpider(CrawlSpider):
                                     related = []
                                     title = ""+bib_data.entries[entry.key].fields["title"]
                                     title = title.lower()
-                                    print title
+                                    #print title
                                     for linee in BibtecSpider.terms:
                                         #print linee
                                         if linee in title:
-                                            related.append(linee)
+                                            if linee not in related:
+                                                related.append(linee)
                                     uri = bib_data.entries[entry.key].fields["biburl"]
                                     uri = uri.replace("bib","html")
                                     f.write("<"+uri+">")

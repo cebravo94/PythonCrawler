@@ -29,7 +29,7 @@ class BibtecSpider(CrawlSpider):
         
     }
 
-    terms = {"XML"}
+    terms = []
 
     def parseauthor(self, url):   #método que crea archivos para los autores
         try:
@@ -49,12 +49,10 @@ class BibtecSpider(CrawlSpider):
 
     def parse_item(self, response):
         if(len(BibtecSpider.terms)<10):
-            file = open("terms2.txt","r")
+            file = open("out.txt","r")
             for line in file:
-                #print line
-                palabras = line.lower().split(" ")
-                for palabra in palabras:
-                    BibtecSpider.terms.add(palabra)
+                if line not in BibtecSpider.terms:
+                    BibtecSpider.terms.append(line)
             file.close()
         camposbibtex = ["address","annote","author","booktitle","chapter",
         "crossref","doi","edition","editor","institution","journal","month",
@@ -129,12 +127,12 @@ class BibtecSpider(CrawlSpider):
                                     related = []
                                     title = ""+bib_data.entries[entry.key].fields["title"]
                                     title = title.lower()
-                                    #print title
-                                    for linee in BibtecSpider.terms:
-                                        #print linee
-                                        if linee in title:
-                                            if linee not in related:
-                                                related.append(linee)
+                                    print title
+                                    palabrastitulo = title.split(" ")
+                                    for concepto in palabrastitulo:
+                                        if concepto in BibtecSpider.terms:
+                                            related.append(concepto)
+                                    
                                     uri = bib_data.entries[entry.key].fields["biburl"]
                                     uri = uri.replace("bib","html")
                                     f.write("<"+uri+">")
